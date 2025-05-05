@@ -2,20 +2,55 @@ name: CI/CD
 on:
   push:
     branches: [ main ]
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
+    # 1) Define a Postgres service container
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_DB: myapp
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U user -d myapp"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Build Docker image
-      run: docker build -t myapp:latest .
-    - name: Test API
-      run: |
-        docker run -d -p 4000:3000 myapp:latest
-        sleep 5
-        curl -f http://localhost:4000/items
-    - name: Load to Kind & Deploy
-      # assumes self-hosted runner with Docker & Kind installed
-      run: |
-        kind load docker-image myapp:latest --name myapp-cluster
-        kubectl apply -f k8s/
+      - uses: actions/checkout@v3
+
+      # 2) Build your app’s Docker image
+      - name: Build Docker image
+        run: docker build -t myapp:latest .
+
+      # 3) Wait for the Postgres service to become healthy
+      - name: Wait for Postgres
+        run: |
+          until pg_isready -h localhost -U user -d myapp; do
+            sleep 1
+          done
+
+      # 4) Run and smoke-test your API on port 3000
+      - name: Test API
+        run: |
+          docker run -d \
+            --name api-test \
+            -e DATABASE_URL=postgres://user:pass@localhost:5432/myapp \
+            -p 3000:3000 \
+            myapp:latest
+
+          sleep 5
+          curl -f http://localhost:3000/items
+
+      # 5) Load into Kind & deploy (self-hosted runner only)
+      - name: Load to Kind & Deploy
+        run: |
+          kind load docker-image myapp:latest --name myapp-cluster
+          kubectl apply -f k8s/
