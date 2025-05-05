@@ -1,0 +1,21 @@
+name: CI/CD
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Docker image
+      run: docker build -t myapp:latest .
+    - name: Test API
+      run: |
+        docker run -d -p 4000:3000 myapp:latest
+        sleep 5
+        curl -f http://localhost:4000/items
+    - name: Load to Kind & Deploy
+      # assumes self-hosted runner with Docker & Kind installed
+      run: |
+        kind load docker-image myapp:latest --name myapp-cluster
+        kubectl apply -f k8s/
