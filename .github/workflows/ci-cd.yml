@@ -50,7 +50,7 @@ jobs:
             -f init.sql
 
       - name: Start services with Docker Compose
-        run: docker-compose up -d --build
+        run: docker compose up -d --build
 
       - name: Smoke-test API
         run: |
@@ -59,7 +59,7 @@ jobs:
           curl -f http://localhost:3000/items
 
       - name: Tear down Compose
-        run: docker-compose down
+        run: docker compose down
 
       - name: Load to Kind & Deploy
         run: |
