@@ -1,7 +1,8 @@
 name: CI/CD
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build-and-deploy:
@@ -23,43 +24,43 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # Install psql so we can init our schema
       - name: Install Postgres client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
 
       - name: Build Docker image
         run: docker build -t myapp:latest .
 
-      # Wait for the Postgres service to be ready
-      - name: Wait for Postgres
+      - name: Wait for Postgres to be ready
         run: |
           until pg_isready -h localhost -U user -d myapp; do
             sleep 1
           done
 
-      # Initialize the DB schema
       - name: Initialize DB schema
         run: |
-         PGPASSWORD=pass psql \
-          -h localhost \
-          -U user \
-          -d myapp \
-          -f init.sql
+          PGPASSWORD=pass psql \
+            -h localhost \
+            -U user \
+            -d myapp \
+            -f init.sql
 
-      # Run and smoke-test your API on port 3000
-      - name: Test API
+      - name: Start services with Docker Compose
+        run: docker-compose up -d --build
+
+      - name: Smoke-test API
         run: |
-          docker run -d \
-            --name api-test \
-            -e DATABASE_URL=postgres://user:pass@localhost:5432/myapp \
-            -p 3000:3000 \
-            myapp:latest
+          # wait for both db & api
           sleep 5
           curl -f http://localhost:3000/items
 
-      # Finally, deploy to Kind/k8s if you have it available
+      - name: Tear down Compose
+        run: docker-compose down
+
       - name: Load to Kind & Deploy
         run: |
           kind load docker-image myapp:latest --name myapp-cluster
