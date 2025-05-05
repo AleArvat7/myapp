@@ -1,24 +1,44 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>MyApp Items</title>
-  </head>
-  <body>
-    <h1>Items</h1>
-    <ul id="items"></ul>
-
-    <script>
-      fetch('/items')
-        .then(res => res.json())
-        .then(data => {
-          const list = document.getElementById('items');
-          data.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = `${item.id}: ${item.name}`;
-            list.appendChild(li);
-          });
-        });
-    </script>
-  </body>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Alexander Arvat's First Website</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-image: url('/hero.jpg');
+      background-size: cover;
+      background-position: center;
+    }
+  </style>
+</head>
+<body class="h-full flex items-center justify-center">
+  <div class="bg-black bg-opacity-60 p-8 rounded-2xl text-center max-w-xl mx-auto">
+    <h1 class="text-white text-5xl md:text-6xl font-bold mb-8 animate-pulse">
+      Welcome to Alexander Arvat's First Website
+    </h1>
+    <!-- Search Form -->
+    <form id="search-form" class="flex justify-center mb-6">
+      <input id="search-input" type="text" placeholder="Search the web..."
+        class="w-64 p-2 rounded-l-lg focus:outline-none text-black" />
+      <button type="submit"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-r-lg">
+        Search
+      </button>
+    </form>
+  </div>
+  <script>
+    // Hook up search form to Google Search
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const query = document.getElementById('search-input').value.trim();
+      if (query) {
+        const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        window.open(url, '_blank');
+      }
+    });
+  </script>
+</body>
 </html>
