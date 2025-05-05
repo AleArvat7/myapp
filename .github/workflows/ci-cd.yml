@@ -54,12 +54,25 @@ jobs:
 
       - name: Smoke-test API
         run: |
-          # wait for both db & api
           sleep 5
           curl -f http://localhost:3000/items
 
       - name: Tear down Compose
         run: docker compose down
+
+      # ────────────────────────────────────────────────
+      # Install kind, create cluster, and set up kubectl
+      - name: Install Kind
+        uses: engineerd/setup-kind@v0.6.1
+
+      - name: Create Kind cluster
+        run: kind create cluster --name myapp-cluster
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: '1.26.0'
+      # ────────────────────────────────────────────────
 
       - name: Load to Kind & Deploy
         run: |
