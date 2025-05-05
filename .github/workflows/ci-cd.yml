@@ -21,21 +21,30 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          # mount your init.sql so Postgres auto-runs it:
-          -v ${{ github.workspace }}/init.sql:/docker-entrypoint-initdb.d/init.sql
 
     steps:
       - uses: actions/checkout@v3
 
+      # Install psql so we can init our schema
+      - name: Install Postgres client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
       - name: Build Docker image
         run: docker build -t myapp:latest .
 
+      # Wait for the Postgres service to be ready
       - name: Wait for Postgres
         run: |
           until pg_isready -h localhost -U user -d myapp; do
             sleep 1
           done
 
+      # Initialize the DB schema
+      - name: Initialize DB schema
+        run: |
+          psql -h localhost -U user -d myapp -f init.sql
+
+      # Run and smoke-test your API on port 3000
       - name: Test API
         run: |
           docker run -d \
@@ -46,6 +55,7 @@ jobs:
           sleep 5
           curl -f http://localhost:3000/items
 
+      # Finally, deploy to Kind/k8s if you have it available
       - name: Load to Kind & Deploy
         run: |
           kind load docker-image myapp:latest --name myapp-cluster
