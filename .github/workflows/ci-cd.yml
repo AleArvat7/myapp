@@ -42,7 +42,11 @@ jobs:
       # Initialize the DB schema
       - name: Initialize DB schema
         run: |
-          psql -h localhost -U user -d myapp -f init.sql
+         PGPASSWORD=pass psql \
+          -h localhost \
+          -U user \
+          -d myapp \
+          -f init.sql
 
       # Run and smoke-test your API on port 3000
       - name: Test API
