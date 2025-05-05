@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to Alexander Arvat's First Website</title>
-  <!-- Google Font: Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Poppins for headings, Inter for body -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -15,32 +15,34 @@
       background-size: cover;
       background-position: center;
     }
+    h1 {
+      font-family: 'Poppins', sans-serif;
+      letter-spacing: 0.05em;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+      animation: fadeIn 1.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body class="h-full flex items-center justify-center px-4">
-  <div class="bg-black bg-opacity-60 p-8 rounded-2xl text-center max-w-xl mx-auto">
-    <h1 class="text-white text-4xl md:text-5xl lg:text-6xl font-bold mb-8">
+  <div class="bg-black bg-opacity-50 p-6 md:p-8 rounded-2xl text-center max-w-lg mx-auto backdrop-blur-sm">
+    <h1 class="text-white text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
       Welcome to Alexander Arvat's First Website
     </h1>
-    <!-- Modern Search Form -->
-    <form id="search-form" class="relative mx-auto w-full max-w-md">
+    <!-- Sleek Search Form -->
+    <form id="search-form" class="mx-auto w-full max-w-xs">
       <input id="search-input" type="text" placeholder="Search the web..."
-        class="block w-full bg-white bg-opacity-80 placeholder-gray-500 text-gray-800 rounded-full py-3 px-6 focus:outline-none shadow-lg" />
-      <button type="submit"
-        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-700 font-semibold">
-        Search
-      </button>
+        class="block w-full bg-transparent border border-white border-opacity-60 placeholder-gray-300 text-white rounded-full py-2 px-4 focus:outline-none focus:ring-1 focus:ring-white transition" />
     </form>
   </div>
   <script>
-    // Hook up search form to Google Search
     document.getElementById('search-form').addEventListener('submit', function(e) {
       e.preventDefault();
-      const query = document.getElementById('search-input').value.trim();
-      if (query) {
-        const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-        window.open(url, '_blank');
-      }
+      const q = document.getElementById('search-input').value.trim();
+      if (q) window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
     });
   </script>
 </body>
