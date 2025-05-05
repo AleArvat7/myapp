@@ -7,7 +7,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    # 1) Define a Postgres service container
     services:
       db:
         image: postgres:15
@@ -22,22 +21,21 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          # mount your init.sql so Postgres auto-runs it:
+          -v ${{ github.workspace }}/init.sql:/docker-entrypoint-initdb.d/init.sql
 
     steps:
       - uses: actions/checkout@v3
 
-      # 2) Build your app’s Docker image
       - name: Build Docker image
         run: docker build -t myapp:latest .
 
-      # 3) Wait for the Postgres service to become healthy
       - name: Wait for Postgres
         run: |
           until pg_isready -h localhost -U user -d myapp; do
             sleep 1
           done
 
-      # 4) Run and smoke-test your API on port 3000
       - name: Test API
         run: |
           docker run -d \
@@ -45,11 +43,9 @@ jobs:
             -e DATABASE_URL=postgres://user:pass@localhost:5432/myapp \
             -p 3000:3000 \
             myapp:latest
-
           sleep 5
           curl -f http://localhost:3000/items
 
-      # 5) Load into Kind & deploy (self-hosted runner only)
       - name: Load to Kind & Deploy
         run: |
           kind load docker-image myapp:latest --name myapp-cluster
